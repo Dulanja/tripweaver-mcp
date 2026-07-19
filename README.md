@@ -68,21 +68,38 @@ python mcp_servers/flight_server.py
 
 ## Known Issue — API Key Quota
 
-The `OPENAI_API_KEY` provided for this assignment currently returns `insufficient_quota` (429)
-on live calls, and a prior variant returned `invalid_api_key` (401), verified by direct
-`curl` testing against `https://api.openai.com/v1/models` (bypassing the app entirely). The
-full pipeline — MCP tool invocation, intent routing, state passing, and error handling — runs
-correctly end-to-end up to the point of the LLM call itself. Once a funded key is supplied,
-no code changes are needed; simply update `.env` and restart.
+The `OPENAI_API_KEY` provided for this assignment returns `insufficient_quota` (429) on
+live calls, verified both locally and on the deployed backend, and a prior variant
+returned `invalid_api_key` (401), verified by direct `curl` testing against
+`https://api.openai.com/v1/models` (bypassing the app entirely). The full pipeline — MCP
+tool invocation, intent routing, state passing, and graceful error handling — runs
+correctly end-to-end up to the point of the LLM call itself, both locally and in the
+deployed environment. Once a funded key is supplied, no code changes are needed — just
+update the `OPENAI_API_KEY` environment variable in the Render dashboard for the backend
+service.
 
 ## Deployment
 
-- **Backend**: Render — Build Command `pip install -r requirements.txt`, Start Command
-  `python main.py`, `OPENAI_API_KEY` set as an environment variable in the dashboard.
-- **Frontend**: Hugging Face Spaces (Gradio SDK) — `TRAVEL_PLANNER_API_URL` set as a secret,
-  pointing to the deployed backend's `/chat` endpoint.
+Both backend and frontend are deployed on **Render** as separate Web Services from this
+same repository.
 
-Deployment is configured and ready; live deployment is pending a working API key (see above).
+- **Backend**: https://tripweaver-mcp.onrender.com
+  - Build Command: `pip install -r requirements.txt`
+  - Start Command: `python main.py`
+  - Environment Variable: `OPENAI_API_KEY`
+
+- **Frontend**: https://tripweaver-frontend-ys6w.onrender.com
+  - Build Command: `pip install -r requirements.txt`
+  - Start Command: `python frontend.py`
+  - Environment Variable: `TRAVEL_PLANNER_API_URL` = `https://tripweaver-mcp.onrender.com/chat`
+
+Both are on Render's free instance tier, which spins down after periods of inactivity —
+the first request after idle time may take 30–60 seconds to respond while the instance
+wakes up.
+
+Live chat responses are currently blocked by the API key issue described above (the app
+runs and returns a graceful error message rather than crashing), but the deployed
+infrastructure, routing, and MCP integration are fully functional and inspectable.
 
 ## Tech Stack
 
