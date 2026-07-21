@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from entity import ChatRequest, ChatResponse
-from agents.tools import get_hotels, get_flights
+from agents.mcp_client import get_mcp_tools
 from agents.graph import graph
 
 conversation_history_messages = []
@@ -17,6 +17,12 @@ app.add_middleware(
 )
 
 
+@app.on_event("startup")
+async def startup_event():
+    # Pre-warm the MCP connection so the first chat request isn't slow
+    await get_mcp_tools()
+
+
 @app.get("/")
 async def hello():
     return {"message": "Hello, World!"}
@@ -24,12 +30,14 @@ async def hello():
 
 @app.get("/hotels")
 async def list_hotels():
-    return get_hotels.invoke({})
+    tools = await get_mcp_tools()
+    return await tools["list_hotels"].ainvoke({})
 
 
 @app.get("/flights")
 async def list_flights():
-    return get_flights.invoke({})
+    tools = await get_mcp_tools()
+    return await tools["list_flights"].ainvoke({})
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -64,7 +72,7 @@ async def chat(request: ChatRequest):
         "response_text": "",
     }
 
-    result = graph.invoke(initial_state)
+    result = await graph.ainvoke(initial_state)
 
     response_text = result.get("response_text", "Something went wrong. Please try again.")
 
