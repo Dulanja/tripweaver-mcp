@@ -89,7 +89,7 @@ def _format_hotel(hotel: dict) -> str:
     name = hotel.get("name", "Unknown hotel")
     city_data = hotel.get("city", "unknown city")
     city = city_data.get("name", "unknown city") if isinstance(city_data, dict) else city_data
-    stars = hotel.get("stars", hotel.get("rating", "N/A"))
+    stars = hotel.get("stars", hotel.get("rating", hotel.get("starRating", "N/A")))
     price = hotel.get("price", hotel.get("pricePerNight", "N/A"))
     currency = hotel.get("currency", "USD")
     available = hotel.get("available_rooms", hotel.get("availableRooms", hotel.get("available", "N/A")))
