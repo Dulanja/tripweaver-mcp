@@ -177,10 +177,17 @@ async def hotel_node(state: GraphState) -> dict:
                 "response_text": "Hotel search is temporarily unavailable. Please try again shortly.",
             }
 
+    import json as _json
     if isinstance(result, dict):
         hotel_results = result.get("hotels", [])
     elif isinstance(result, list):
-        hotel_results = result
+        if result and isinstance(result[0], dict) and result[0].get("type") == "text":
+            try:
+                hotel_results = _json.loads(result[0]["text"])
+            except Exception:
+                hotel_results = []
+        else:
+            hotel_results = result
     else:
         hotel_results = []
 
@@ -255,10 +262,17 @@ async def flight_node(state: GraphState) -> dict:
                 "response_text": "Flight search is temporarily unavailable. Please try again shortly.",
             }
 
+    import json as _json
     if isinstance(result, dict):
-        flight_results = result.get("flights", [])
+        flight_results = result.get("hotels", [])
     elif isinstance(result, list):
-        flight_results = result
+        if result and isinstance(result[0], dict) and result[0].get("type") == "text":
+            try:
+                flight_results = _json.loads(result[0]["text"])
+            except Exception:
+                flight_results = []
+        else:
+            flight_results = result
     else:
         flight_results = []
 
